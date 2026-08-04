@@ -262,7 +262,28 @@ async def reminders_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text += f"🔔 {r[3]}\n📅 {r[2]}\n📝 {r[1]}\n\n"
 
     await update.message.reply_text(text, parse_mode='Markdown')
-
+async def today_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Показывает задачи на сегодня"""
+    today = datetime.now().strftime("%d.%m.%Y")
+    reminders = get_today_reminders()
+    
+    if not reminders:
+        await update.message.reply_text(
+            f"📅 *Сводка на {today}*\n\n✅ Сегодня нет запланированных звонков!",
+            parse_mode='Markdown'
+        )
+        return
+    
+    text = f"📅 *Сводка на {today}*\n\n⏰ *Запланированные звонки:*\n\n"
+    for r in reminders:
+        time = r[1].split()[1] if ' ' in str(r[1]) else ''
+        text += f"🔔 *{r[2]}*\n"
+        text += f"   🕐 {time}\n"
+        text += f"   📝 {r[0]}\n\n"
+    
+    text += "💪 Удачных звонков!"
+    
+    await update.message.reply_text(text, parse_mode='Markdown')
 
 async def add_client_manual(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
@@ -399,6 +420,7 @@ def main():
     application.add_handler(CommandHandler("stats", statistics))
     application.add_handler(CommandHandler("history", client_history))
     application.add_handler(CommandHandler("reminders", reminders_list))
+        application.add_handler(CommandHandler("today", today_cmd))
     application.add_handler(CommandHandler("add", add_client_manual))
 
     # Сообщения
@@ -417,6 +439,7 @@ def main():
 
     print("🤖 Бот запущен! Отправь /start в Telegram")
     application.run_polling()
+📅 /today — задачи на сегодня
 
 
 if __name__ == '__main__':
