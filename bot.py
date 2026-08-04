@@ -331,10 +331,11 @@ async def check_reminders(context: ContextTypes.DEFAULT_TYPE):
 
 
 async def check_reminders(context: ContextTypes.DEFAULT_TYPE):
+    """Проверка напоминаний (каждые 5 минут)"""
     global ADMIN_CHAT_ID
     if not ADMIN_CHAT_ID:
         return
-
+    
     reminders = get_pending_reminders()
     for r in reminders:
         text = f"""
@@ -351,6 +352,38 @@ async def check_reminders(context: ContextTypes.DEFAULT_TYPE):
             mark_reminder_sent(r[0])
         except Exception as e:
             logger.error(f"Ошибка напоминания: {e}")
+
+
+async def daily_summary(context: ContextTypes.DEFAULT_TYPE):
+    """Ежедневная сводка утром"""
+    global ADMIN_CHAT_ID
+    if not ADMIN_CHAT_ID:
+        return
+    
+    today = datetime.now().strftime("%d.%m.%Y")
+    reminders = get_today_reminders()
+    
+    if not reminders:
+        await context.bot.send_message(
+            chat_id=ADMIN_CHAT_ID,
+            text=f"📅 *Сводка на {today}*\n\n✅ Сегодня нет запланированных звонков!",
+            parse_mode='Markdown'
+        )
+        return
+    
+    text = f"📅 *Сводка на {today}*\n\n⏰ *Запланированные звонки:*\n\n"
+    for r in reminders:
+        time = r[1].split()[1] if ' ' in str(r[1]) else ''
+        text += f"🔔 {r[2]}\n"
+        text += f"   🕐 {time}\n"
+        text += f"   📝 {r[0]}\n\n"
+    
+    text += "💪 Хорошего дня и удачных звонков!"
+    
+    try:
+        await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=text, parse_mode='Markdown')
+    except Exception as e:
+        logger.error(f"Ошибка сводки: {e}")
 
 
 def main():
