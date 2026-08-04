@@ -50,7 +50,7 @@ def parse_call_summary(text):
     )
     
     content = response.choices[0].message.content
-    json_match = re.search(r'\{{.*\}}', content, re.DOTALL)
+    json_match = re.search(r'\{.*\}', content, re.DOTALL)
     
     if json_match:
         return json.loads(json_match.group())
