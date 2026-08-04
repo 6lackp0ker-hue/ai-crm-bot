@@ -408,9 +408,12 @@ def main():
     # Кнопки
     application.add_handler(CallbackQueryHandler(button_callback))
 
-    # Напоминания каждые 5 минут
+        # Напоминания каждые 5 минут
     job_queue = application.job_queue
     job_queue.run_repeating(check_reminders, interval=300, first=10)
+    
+    # Утренняя сводка каждый день в 8:00
+    job_queue.run_daily(daily_summary, time=datetime.time(hour=8, minute=0))
 
     print("🤖 Бот запущен! Отправь /start в Telegram")
     application.run_polling()
